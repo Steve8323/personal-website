@@ -1,0 +1,29 @@
+---
+title: "Time makes everything small"
+date: "2026-05-09"
+excerpt: "On guilt, snowstorms, and how the things that once felt unbearable get smaller with time."
+---
+
+Offhandedly, my english teacher said something the other day along the lines of "you will experience an unfathomable amount of trauma in your life". She said it with one of those half smiles that you do when you mean something but it's also strong or blunt, so you smile to make it less awkward. A few moments of silence passed, and then she brought us back to the poem analysis essay due the next day.
+
+I wanted to talk about something related that I feel like is a lesson that everyone learns but I haven't personally read anything on. Maybe people have and I've just missed it, but then I'll just add a little bit of fuel to the fire.
+
+It's how everything feels okay with time.
+
+It was a Monday afternoon. The entire dorm was ecstatic because we had a snow day that day and another one had just been announced for the next day. We were going to repeat the tradition of watching interstellar and give up and switch to love island halfway through. I went downstairs and invited a couple of guys, but one of them (let's call him Jake) didn't really answer me or show any acknowledgement. I thought it was weird, but what can you really do when someone blows you off entirely? We (but really just me and one other guy because the other guys were opportunistic bastards who just wanted food) went on with watching interstellar, and just barely made it past the mid point, but this time we stopped for a different reason. He noticed that Jake called him, and spoke with him briefly before saying he was going down to the parking lot down the hill and asked if I wanted to come.
+
+For some context, we were in the middle of maybe the greatest snowstorm in history, it was dark, neither of us had any boots, and he just said he was going to go check on someone down the hill.
+
+I thought something was off and decided to skip the rest of my dinner to tag along. When he went downstairs to get dressed, I noticed Jake called me too, so I called him back because I was more than curious at that point. He mumbled some stuff, and then he said "suicide by hypothermia". I heard him the first time, and I said something really brief like "I understand, see you soon". But for whatever reason, I took my time. Instead of a sprint, I settled for a brisk walk, and even changed clothes. Fortunately, he was okay when I got there. We talked to him briefly before handing him over to adults, and later paramedics.
+
+I don't think I'm usually very emotional. On the contrary, I'd started feeling numb that year because of a personal failure. But that night, I completely broke down while calling my mom. I started with my head in my hands before anger overwhelmed any self pity. I first punched the wall for my mistakes, and then harder because I wanted to stop because of the pain. Somewhat selfishly, narcissistically, I didn't care about noticing the pain he was in, maybe because I had my own thoughts on suicide in the past and knew that the signs and clues were almost impossible to notice. Instead, I focused on what I could have very easily done. I could have kept him on the phone. I could have called paramedics. I could have noticed his call the first time. I could have ran. I could have gone in shorts, and barefoot if necessary.
+
+These were the thoughts I was bawling over.
+
+Mistakes are acceptable, and excusable, especially given that this was the first time I've had to deal with something like that, but it's ultimately the results that matter. Jake was okay this time, but what if it was worse. Would I be able to forgive myself for not having done better, faster?
+
+Now, a lot of you might consider that I was overreacting. But that's the point. Later, I found out that Jake was okay, that he's largely recovered, and that the overwhelming majority of suicide attempts fail. The mistakes I made hardly held the gravity to make me break down. But only looking back on them, only when I articulate them. For the first time, looking back, I can say I can forgive myself. But not knowing that I could, in the moment and period following, I talked with close friends, talked with numerous adults, and talked to 5 different therapists.
+
+I think everyone has this kind of deep rooted feeling, and like my english teacher said, the kind that only accumulates with age. An event that inspired tremendous guilt or anger. One that deeply resonates with you in the moment, and you can't fathom how you would ever get through it. Maybe it's just a girl who you really like for no explainable reason (who doesn't really like you back (or talk to you (and has rejected you))) but you still try to talk to her every chance you get because you can't think of anyone else you could possibly like. Or maybe it's just your second consecutive all nighter for a project you've been working on for two years and you can't think of anything except success, but you fail gloriously anyways and have nothing to show for it and can't think of an after where you don't think about this failure anymore. Or maybe it's just a test you're studying for at 2 am and you can't consider anything except an after. Or maybe it's just the last up the largest hill of a 5k where you can't consider anything except the next searing step.
+
+Over time, these things get better, never linearly, and they still pop into my head every now and then. But over time, the thoughts of the past don't inspire the same rage they once did. Over time they get less frequent. And over time the thoughts might disappear entirely to make way for reflections on greater trauma. And over time, that will fade too. (I still can't quite get over the girl, but hopefully college and talking to more people will help with that, just as they have for my other experiences)
