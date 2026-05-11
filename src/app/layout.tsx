@@ -63,7 +63,16 @@ export default function RootLayout({
         </main>
         <footer className="border-t border-black/[.06] py-8 dark:border-white/[.08]">
           <div className="mx-auto flex max-w-3xl flex-col items-start gap-2 px-6 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>© {new Date().getFullYear()} Steve Hou</span>
+            <span>
+              <Link
+                href="/admin/login"
+                aria-label="Admin"
+                className="cursor-default text-inherit no-underline hover:text-inherit"
+              >
+                ©
+              </Link>{" "}
+              {new Date().getFullYear()} Steve Hou
+            </span>
             <a
               href="mailto:contact.levu@proton.me"
               className="font-mono hover:text-foreground"

@@ -1,8 +1,20 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
+import {
+  CATEGORY_LABELS,
+  CATEGORY_ORDER,
+  getReadings,
+  groupByCategory,
+} from "@/lib/readings-store";
 
-export default function Home() {
-  const posts = getAllPosts();
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [posts, readings] = await Promise.all([
+    Promise.resolve(getAllPosts()),
+    getReadings(),
+  ]);
+  const grouped = groupByCategory(readings);
 
   return (
     <div className="flex flex-col gap-16">
@@ -21,6 +33,52 @@ export default function Home() {
           if you&apos;re interested in talking about the philosophy of superintelligence,
           AI-related neuroscience, or why sleep is important!
         </p>
+      </section>
+
+      <section>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
+            Recommended reading
+          </h2>
+          <Link
+            href="/readings"
+            className="text-sm text-zinc-500 hover:text-foreground"
+          >
+            all →
+          </Link>
+        </div>
+        <div className="mt-6 flex flex-col gap-8">
+          {CATEGORY_ORDER.map((cat) => {
+            const items = grouped[cat];
+            if (items.length === 0) return null;
+            return (
+              <div key={cat}>
+                <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                  {CATEGORY_LABELS[cat]}
+                </h3>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {items.map((r) => (
+                    <li key={r.id} className="text-sm leading-6">
+                      {r.link ? (
+                        <a
+                          href={r.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground hover:underline underline-offset-4"
+                        >
+                          {r.title}
+                        </a>
+                      ) : (
+                        <span className="text-foreground">{r.title}</span>
+                      )}
+                      <span className="text-zinc-500"> — {r.author}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {posts.length > 0 && (
