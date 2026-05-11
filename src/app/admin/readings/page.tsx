@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getReadings, isStoreConfigured } from "@/lib/readings-store";
 import ReadingsEditor from "./readings-editor";
 
@@ -17,15 +18,22 @@ export default async function AdminReadingsPage() {
     <div>
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Edit readings</h1>
-        <form action="/api/admin/logout" method="post">
-          <button
-            type="submit"
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/lunches"
             className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
-            formAction="/api/admin/logout"
           >
-            Sign out
-          </button>
-        </form>
+            lunches →
+          </Link>
+          <form action="/api/admin/logout" method="post">
+            <button
+              type="submit"
+              className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
       {!storeConfigured && (
         <div className="mt-6 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
