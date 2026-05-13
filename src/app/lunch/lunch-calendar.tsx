@@ -152,21 +152,12 @@ export default function LunchCalendar({
                 className={cls}
               >
                 <span className="font-medium leading-none">{cell.label}</span>
-                {!dim && count >= 2 && (
-                  <span
-                    className={`mt-1 font-mono text-[10px] ${
-                      isSelected ? "text-background/80" : "text-zinc-500"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
               </button>
             );
           })}
         </div>
         <p className="mt-3 font-mono text-[11px] text-zinc-500">
-          numbers show how many people are competing for a day
+          click a day to apply
         </p>
       </div>
 
