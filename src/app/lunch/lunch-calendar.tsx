@@ -152,7 +152,7 @@ export default function LunchCalendar({
                 className={cls}
               >
                 <span className="font-medium leading-none">{cell.label}</span>
-                {!dim && count > 0 && (
+                {!dim && count >= 2 && (
                   <span
                     className={`mt-1 font-mono text-[10px] ${
                       isSelected ? "text-background/80" : "text-zinc-500"
@@ -166,7 +166,7 @@ export default function LunchCalendar({
           })}
         </div>
         <p className="mt-3 font-mono text-[11px] text-zinc-500">
-          numbers show how many people have applied
+          numbers show how many people are competing for a day
         </p>
       </div>
 
@@ -177,10 +177,10 @@ export default function LunchCalendar({
         >
           <p className="text-sm">
             Applying for <strong>{humanDate(selected)}</strong>.
-            {counts[selected] ? (
+            {counts[selected] >= 2 ? (
               <span className="text-zinc-500">
                 {" "}
-                · {counts[selected]} other{counts[selected] === 1 ? "" : "s"} so far
+                · {counts[selected]} people already applied
               </span>
             ) : null}
           </p>
@@ -208,17 +208,18 @@ export default function LunchCalendar({
               htmlFor="message"
               className="font-mono text-[11px] uppercase tracking-widest text-zinc-500"
             >
-              What you&apos;d like to talk about
+              What do you want to talk about{" "}
+              <span className="normal-case tracking-normal text-zinc-400">
+                (not required)
+              </span>
             </label>
             <textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              minLength={20}
               maxLength={3000}
               rows={6}
-              required
-              placeholder="A paragraph on why you'd like to grab lunch — or just what you'd like to talk about."
+              placeholder="Optional — leave blank if you don't have anything specific in mind."
               className="rounded-md border border-black/[.12] bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/[.18] resize-y"
             />
           </div>

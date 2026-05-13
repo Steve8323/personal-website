@@ -35,6 +35,35 @@ export default async function Home() {
         </p>
       </section>
 
+      {posts.length > 0 && (
+        <section>
+          <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
+            Writing
+          </h2>
+          <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
+            {posts.map((post) => (
+              <li key={post.slug} className="py-5">
+                <Link href={`/blog/${post.slug}`} className="group block">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h3 className="font-medium group-hover:underline underline-offset-4">
+                      {post.title}
+                    </h3>
+                    <span className="font-mono text-xs text-zinc-500 shrink-0">
+                      {post.dateLabel}
+                    </span>
+                  </div>
+                  {post.excerpt && (
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      {post.excerpt}
+                    </p>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section>
         <div className="flex items-baseline justify-between">
           <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
@@ -80,35 +109,6 @@ export default async function Home() {
           })}
         </div>
       </section>
-
-      {posts.length > 0 && (
-        <section>
-          <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
-            Writing
-          </h2>
-          <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
-            {posts.map((post) => (
-              <li key={post.slug} className="py-5">
-                <Link href={`/blog/${post.slug}`} className="group block">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h3 className="font-medium group-hover:underline underline-offset-4">
-                      {post.title}
-                    </h3>
-                    <span className="font-mono text-xs text-zinc-500 shrink-0">
-                      {post.dateLabel}
-                    </span>
-                  </div>
-                  {post.excerpt && (
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      {post.excerpt}
-                    </p>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

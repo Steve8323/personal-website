@@ -38,15 +38,8 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (
-    typeof message !== "string" ||
-    message.trim().length < 20 ||
-    message.length > 3000
-  ) {
-    return Response.json(
-      { error: "Write at least a short paragraph (20+ characters)." },
-      { status: 400 },
-    );
+  if (typeof message !== "string" || message.length > 3000) {
+    return Response.json({ error: "Message is too long." }, { status: 400 });
   }
 
   const result = await createApplication({
