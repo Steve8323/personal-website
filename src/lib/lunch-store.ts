@@ -11,22 +11,7 @@ export type LunchApplication = {
   status: LunchApplicationStatus;
 };
 
-export type LunchUser = {
-  email: string;
-  createdAt: number;
-  verifiedAt: number;
-};
-
-export type MagicLinkRecord = {
-  email: string;
-  expiresAt: number;
-};
-
-const USERS_KEY = "lunch:users";
 const APPS_KEY = "lunch:applications";
-const MAGIC_PREFIX = "lunch:magic:";
-
-const MAGIC_TTL_SECONDS = 15 * 60;
 
 function getRedis(): Redis | null {
   const url =
@@ -38,7 +23,7 @@ function getRedis(): Redis | null {
 }
 
 export function isLunchConfigured(): boolean {
-  return getRedis() !== null && !!process.env.RESEND_API_KEY && !!process.env.ADMIN_PASSWORD;
+  return getRedis() !== null && !!process.env.RESEND_API_KEY;
 }
 
 function require_(): Redis {
@@ -51,73 +36,10 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-// --- Users ---
-
-export async function getUser(email: string): Promise<LunchUser | null> {
-  const list = (await require_().get<LunchUser[]>(USERS_KEY)) || [];
-  const target = normalizeEmail(email);
-  return list.find((u) => u.email === target) || null;
-}
-
-export async function upsertVerifiedUser(email: string): Promise<LunchUser> {
-  const r = require_();
-  const list = (await r.get<LunchUser[]>(USERS_KEY)) || [];
-  const target = normalizeEmail(email);
-  const now = Date.now();
-  const existing = list.find((u) => u.email === target);
-  let user: LunchUser;
-  if (existing) {
-    existing.verifiedAt = existing.verifiedAt || now;
-    user = existing;
-  } else {
-    user = { email: target, createdAt: now, verifiedAt: now };
-    list.push(user);
-  }
-  await r.set(USERS_KEY, list);
-  return user;
-}
-
-// --- Magic links ---
-
-export async function saveMagicLink(token: string, email: string): Promise<void> {
-  const r = require_();
-  const record: MagicLinkRecord = {
-    email: normalizeEmail(email),
-    expiresAt: Date.now() + MAGIC_TTL_SECONDS * 1000,
-  };
-  await r.set(MAGIC_PREFIX + token, record, { ex: MAGIC_TTL_SECONDS });
-}
-
-export async function consumeMagicLink(token: string): Promise<string | null> {
-  const r = require_();
-  const key = MAGIC_PREFIX + token;
-  const record = await r.get<MagicLinkRecord | null>(key);
-  if (!record) return null;
-  if (record.expiresAt < Date.now()) {
-    await r.del(key);
-    return null;
-  }
-  await r.del(key);
-  return record.email;
-}
-
-// --- Applications ---
-
 export async function getAllApplications(): Promise<LunchApplication[]> {
   const r = require_();
   const list = (await r.get<LunchApplication[]>(APPS_KEY)) || [];
   return list;
-}
-
-export async function getApplicationsByDate(date: string): Promise<LunchApplication[]> {
-  const all = await getAllApplications();
-  return all.filter((a) => a.date === date);
-}
-
-export async function getApplicationsByEmail(email: string): Promise<LunchApplication[]> {
-  const all = await getAllApplications();
-  const target = normalizeEmail(email);
-  return all.filter((a) => a.email === target);
 }
 
 export async function applicationCountsByDate(): Promise<Record<string, number>> {
@@ -139,7 +61,7 @@ export async function createApplication(input: {
   const email = normalizeEmail(input.email);
   const list = (await r.get<LunchApplication[]>(APPS_KEY)) || [];
   if (list.some((a) => a.email === email && a.date === input.date)) {
-    return { ok: false, error: "You've already applied for this day." };
+    return { ok: false, error: "You've already applied for this day with that email." };
   }
   const application: LunchApplication = {
     id: crypto.randomUUID(),
@@ -152,30 +74,6 @@ export async function createApplication(input: {
   list.push(application);
   await r.set(APPS_KEY, list);
   return { ok: true, application };
-}
-
-export async function deleteApplication(id: string, email: string): Promise<boolean> {
-  const r = require_();
-  const target = normalizeEmail(email);
-  const list = (await r.get<LunchApplication[]>(APPS_KEY)) || [];
-  const idx = list.findIndex((a) => a.id === id && a.email === target);
-  if (idx < 0) return false;
-  list.splice(idx, 1);
-  await r.set(APPS_KEY, list);
-  return true;
-}
-
-export async function updateApplicationStatus(
-  id: string,
-  status: LunchApplicationStatus,
-): Promise<LunchApplication | null> {
-  const r = require_();
-  const list = (await r.get<LunchApplication[]>(APPS_KEY)) || [];
-  const app = list.find((a) => a.id === id);
-  if (!app) return null;
-  app.status = status;
-  await r.set(APPS_KEY, list);
-  return app;
 }
 
 export async function pickWinner(id: string): Promise<LunchApplication | null> {

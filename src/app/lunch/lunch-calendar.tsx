@@ -19,14 +19,6 @@ type Calendar = {
   nextMonth: string | null;
 };
 
-type MyApp = {
-  id: string;
-  date: string;
-  message: string;
-  status: "pending" | "selected" | "declined";
-  createdAt: number;
-};
-
 const WEEKDAY_HEADERS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function humanDate(iso: string) {
@@ -39,96 +31,65 @@ function humanDate(iso: string) {
   });
 }
 
+type Status =
+  | { kind: "idle" }
+  | { kind: "submitting" }
+  | { kind: "submitted" }
+  | { kind: "error"; message: string };
+
 export default function LunchCalendar({
-  email,
   calendar,
   counts,
-  myApps,
 }: {
-  email: string;
   calendar: Calendar;
   counts: Record<string, number>;
-  myApps: MyApp[];
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const myDates = new Set(myApps.map((a) => a.date));
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   function pickDay(iso: string) {
     setSelected(iso);
-    setMessage("");
-    setError(null);
+    setStatus({ kind: "idle" });
   }
 
   async function submitApplication(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!selected) return;
-    setSubmitting(true);
-    setError(null);
+    setStatus({ kind: "submitting" });
     try {
       const res = await fetch("/api/lunch/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: selected, message }),
+        body: JSON.stringify({ email, date: selected, message }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(
-          typeof data.error === "string" ? data.error : "Couldn't submit.",
-        );
-        setSubmitting(false);
+        setStatus({
+          kind: "error",
+          message:
+            typeof data.error === "string" ? data.error : "Couldn't submit.",
+        });
         return;
       }
-      setSelected(null);
+      setStatus({ kind: "submitted" });
       setMessage("");
-      setSubmitting(false);
       router.refresh();
     } catch {
-      setError("Couldn't reach the server.");
-      setSubmitting(false);
+      setStatus({ kind: "error", message: "Couldn't reach the server." });
     }
   }
 
-  async function cancelApplication(id: string) {
-    if (!confirm("Cancel this application?")) return;
-    try {
-      const res = await fetch(`/api/lunch/apply?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        alert("Couldn't cancel.");
-        return;
-      }
-      router.refresh();
-    } catch {
-      alert("Couldn't reach the server.");
-    }
-  }
-
-  async function signOut() {
-    await fetch("/api/lunch/logout", { method: "POST" });
-    router.refresh();
+  function reset() {
+    setSelected(null);
+    setMessage("");
+    setStatus({ kind: "idle" });
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex items-center justify-between text-xs text-zinc-500">
-        <span>
-          Signed in as <span className="font-mono">{email}</span>
-        </span>
-        <button
-          type="button"
-          onClick={signOut}
-          className="font-mono uppercase tracking-widest hover:text-foreground"
-        >
-          Sign out
-        </button>
-      </div>
-
+    <div className="flex flex-col gap-8">
       <div>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{calendar.monthLabel}</h2>
@@ -171,7 +132,6 @@ export default function LunchCalendar({
           ))}
           {calendar.cells.map((cell) => {
             const count = counts[cell.iso] || 0;
-            const mine = myDates.has(cell.iso);
             const isSelected = selected === cell.iso;
             const dim = !cell.inMonth || cell.isPast || !cell.isAvailable;
 
@@ -181,9 +141,7 @@ export default function LunchCalendar({
               ? `${base} cursor-default border-transparent text-zinc-300 dark:text-zinc-700`
               : isSelected
                 ? `${base} cursor-pointer border-foreground bg-foreground text-background`
-                : mine
-                  ? `${base} cursor-pointer border-emerald-500/60 bg-emerald-500/10 hover:bg-emerald-500/15`
-                  : `${base} cursor-pointer border-black/[.10] hover:border-foreground dark:border-white/[.15]`;
+                : `${base} cursor-pointer border-black/[.10] hover:border-foreground dark:border-white/[.15]`;
 
             return (
               <button
@@ -203,21 +161,16 @@ export default function LunchCalendar({
                     {count}
                   </span>
                 )}
-                {!dim && mine && !isSelected && (
-                  <span className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    you
-                  </span>
-                )}
               </button>
             );
           })}
         </div>
         <p className="mt-3 font-mono text-[11px] text-zinc-500">
-          numbers show how many people have applied · green = you applied
+          numbers show how many people have applied
         </p>
       </div>
 
-      {selected && (
+      {selected && status.kind !== "submitted" && (
         <form
           onSubmit={submitApplication}
           className="rounded-lg border border-black/[.08] p-5 dark:border-white/[.12]"
@@ -231,96 +184,85 @@ export default function LunchCalendar({
               </span>
             ) : null}
           </p>
-          {myDates.has(selected) ? (
-            <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
-              You&apos;ve already applied for this day. Cancel below to re-apply.
-            </p>
-          ) : (
-            <>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                minLength={20}
-                maxLength={3000}
-                rows={6}
-                required
-                placeholder="A paragraph on why you'd like to grab lunch — or just what you'd like to talk about."
-                className="mt-3 w-full rounded-md border border-black/[.12] bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/[.18] resize-y"
-              />
-              <div className="mt-3 flex items-center gap-4">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="rounded-md bg-foreground px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
-                >
-                  {submitting ? "Applying..." : "Apply"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  className="text-sm text-zinc-500 hover:text-foreground"
-                >
-                  Cancel
-                </button>
-                {error && (
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                )}
-              </div>
-            </>
-          )}
+
+          <div className="mt-4 flex flex-col gap-2">
+            <label
+              htmlFor="email"
+              className="font-mono text-[11px] uppercase tracking-widest text-zinc-500"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="rounded-md border border-black/[.12] bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/[.18]"
+            />
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2">
+            <label
+              htmlFor="message"
+              className="font-mono text-[11px] uppercase tracking-widest text-zinc-500"
+            >
+              What you&apos;d like to talk about
+            </label>
+            <textarea
+              id="message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              minLength={20}
+              maxLength={3000}
+              rows={6}
+              required
+              placeholder="A paragraph on why you'd like to grab lunch — or just what you'd like to talk about."
+              className="rounded-md border border-black/[.12] bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/[.18] resize-y"
+            />
+          </div>
+
+          <div className="mt-4 flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={status.kind === "submitting"}
+              className="rounded-md bg-foreground px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {status.kind === "submitting" ? "Applying..." : "Apply"}
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              className="text-sm text-zinc-500 hover:text-foreground"
+            >
+              Cancel
+            </button>
+            {status.kind === "error" && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {status.message}
+              </p>
+            )}
+          </div>
         </form>
       )}
 
-      {myApps.length > 0 && (
-        <div>
-          <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
-            Your applications
-          </h2>
-          <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
-            {[...myApps]
-              .sort((a, b) => (a.date < b.date ? -1 : 1))
-              .map((app) => {
-                const competitors = Math.max(0, (counts[app.date] || 0) - 1);
-                return (
-                  <li key={app.id} className="flex items-start justify-between gap-4 py-4">
-                    <div>
-                      <p className="text-sm font-medium">{humanDate(app.date)}</p>
-                      <p className="mt-1 text-xs text-zinc-500">
-                        {statusLabel(app.status)}
-                        {app.status === "pending" && (
-                          <>
-                            {" · "}
-                            {competitors === 0
-                              ? "no other applicants yet"
-                              : `${competitors} other${competitors === 1 ? "" : "s"} applying`}
-                          </>
-                        )}
-                      </p>
-                      <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
-                        {app.message}
-                      </p>
-                    </div>
-                    {app.status === "pending" && (
-                      <button
-                        type="button"
-                        onClick={() => cancelApplication(app.id)}
-                        className="shrink-0 text-xs text-red-600 hover:text-red-700 dark:text-red-400"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-          </ul>
+      {status.kind === "submitted" && selected && (
+        <div className="rounded-lg border border-black/[.08] p-5 text-sm dark:border-white/[.12]">
+          <p className="font-medium">Got it — you&apos;re in.</p>
+          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            You&apos;ve applied for <strong>{humanDate(selected)}</strong>. If picked,
+            you&apos;ll get an email with a Zoom link.
+          </p>
+          <button
+            type="button"
+            onClick={reset}
+            className="mt-4 font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
+          >
+            Apply for another day →
+          </button>
         </div>
       )}
     </div>
   );
-}
-
-function statusLabel(s: "pending" | "selected" | "declined") {
-  if (s === "selected") return "Picked!";
-  if (s === "declined") return "Not selected this time";
-  return "Pending";
 }

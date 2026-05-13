@@ -46,21 +46,34 @@ export async function POST(request: Request) {
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const dateLabel = formatHumanDate(winner.date);
+    const zoomLink = process.env.ZOOM_LINK?.trim();
+
+    const textLines = [
+      `You've been picked for lunch on ${dateLabel}.`,
+      "",
+    ];
+    if (zoomLink) {
+      textLines.push(`Zoom link: ${zoomLink}`, "");
+    }
+    textLines.push("— Steve");
+
+    const htmlLines = [
+      `<p>You've been picked for lunch on <strong>${escapeHtml(dateLabel)}</strong>.</p>`,
+    ];
+    if (zoomLink) {
+      htmlLines.push(
+        `<p>Zoom link: <a href="${escapeHtml(zoomLink)}">${escapeHtml(zoomLink)}</a></p>`,
+      );
+    }
+    htmlLines.push(`<p style="margin-top:24px;">— Steve</p>`);
+
     try {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: winner.email,
         subject: `Lunch confirmed for ${dateLabel}`,
-        text:
-          `You've been picked for lunch on ${dateLabel}.\n\n` +
-          `Reply to this email and we'll figure out time and place.\n\n— Steve`,
-        html: `
-<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#18181b;max-width:520px;">
-  <p>You've been picked for lunch on <strong>${escapeHtml(dateLabel)}</strong>.</p>
-  <p>Reply to this email and we'll figure out time and place.</p>
-  <p style="margin-top:24px;">— Steve</p>
-</div>
-        `.trim(),
+        text: textLines.join("\n"),
+        html: `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#18181b;max-width:520px;">${htmlLines.join("")}</div>`,
         replyTo: process.env.LUNCH_FROM_EMAIL ? undefined : "contact.levu@proton.me",
       });
     } catch (err) {
