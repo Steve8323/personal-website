@@ -11,11 +11,11 @@ export { CATEGORY_LABELS, CATEGORY_ORDER };
 
 export type Reading = {
   id: string;
-  title: string;
-  author: string;
+  title?: string;
+  author?: string;
   link?: string;
   category: ReadingCategory;
-  note: string;
+  note?: string;
 };
 
 const READINGS_KEY = "readings:list";
@@ -49,9 +49,8 @@ export async function getReadings(): Promise<Reading[]> {
   if (!redis) return seedFromStatic();
   try {
     const data = await redis.get<Reading[] | null>(READINGS_KEY);
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      return seedFromStatic();
-    }
+    if (data === null) return seedFromStatic();
+    if (!Array.isArray(data)) return seedFromStatic();
     return data;
   } catch (err) {
     console.error("Failed to read readings from KV:", err);
@@ -69,21 +68,25 @@ export function validCategory(value: unknown): value is ReadingCategory {
   return value === "life" || value === "work" || value === "ai";
 }
 
+function optionalString(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return undefined;
+  if (trimmed.length > max) return undefined;
+  return trimmed;
+}
+
 export function sanitizeReading(input: unknown): Reading | null {
   if (!input || typeof input !== "object") return null;
   const obj = input as Record<string, unknown>;
   const id = typeof obj.id === "string" && obj.id.length > 0 ? obj.id : null;
-  const title = typeof obj.title === "string" ? obj.title.trim() : "";
-  const author = typeof obj.author === "string" ? obj.author.trim() : "";
-  const note = typeof obj.note === "string" ? obj.note.trim() : "";
-  const link =
-    typeof obj.link === "string" && obj.link.trim().length > 0
-      ? obj.link.trim()
-      : undefined;
-  if (!id || !title || !author || !note) return null;
+  if (!id) return null;
   if (!validCategory(obj.category)) return null;
-  if (title.length > 200 || author.length > 200 || note.length > 1000) return null;
-  if (link && link.length > 500) return null;
+  const title = optionalString(obj.title, 200);
+  const author = optionalString(obj.author, 200);
+  const note = optionalString(obj.note, 2000);
+  const link = optionalString(obj.link, 500);
+  if (!title && !author && !note && !link) return null;
   return { id, title, author, link, category: obj.category, note };
 }
 

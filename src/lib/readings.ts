@@ -1,11 +1,11 @@
 export type ReadingCategory = "life" | "work" | "ai";
 
 export type Reading = {
-  title: string;
-  author: string;
+  title?: string;
+  author?: string;
   link?: string;
   category: ReadingCategory;
-  note: string;
+  note?: string;
 };
 
 export const readings: Reading[] = [

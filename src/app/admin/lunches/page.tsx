@@ -46,12 +46,20 @@ export default async function AdminLunchesPage() {
     <div>
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Lunch applications</h1>
-        <Link
-          href="/admin/readings"
-          className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
-        >
-          ← readings
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/posts"
+            className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
+          >
+            ← posts
+          </Link>
+          <Link
+            href="/admin/readings"
+            className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-foreground"
+          >
+            ← readings
+          </Link>
+        </div>
       </div>
 
       {groups.length === 0 ? (

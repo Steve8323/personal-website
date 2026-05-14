@@ -1,13 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllPosts } from "@/lib/posts";
+import { getPostSummaries } from "@/lib/posts-store";
 
 export const metadata: Metadata = {
   title: "Blog · Steve Hou",
 };
 
-export default function BlogIndex() {
-  const posts = getAllPosts();
+export const dynamic = "force-dynamic";
+
+export default async function BlogIndex() {
+  const posts = await getPostSummaries();
 
   return (
     <div>
@@ -21,7 +23,7 @@ export default function BlogIndex() {
       ) : (
         <ul className="mt-10 divide-y divide-black/[.06] dark:divide-white/[.08]">
           {posts.map((post) => (
-            <li key={post.slug} className="py-5">
+            <li key={post.id} className="py-5">
               <Link href={`/blog/${post.slug}`} className="group block">
                 <div className="flex items-baseline justify-between gap-4">
                   <h2 className="font-medium group-hover:underline underline-offset-4">

@@ -1,17 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAllPostSlugs, getPost } from "@/lib/posts";
+import { getPostBySlug } from "@/lib/posts-store";
 
-export async function generateStaticParams() {
-  return getAllPostSlugs().map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/blog/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const post = await getPost(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return { title: "Not found" };
   return {
     title: `${post.title} · Steve Hou`,
@@ -21,7 +19,7 @@ export async function generateMetadata(
 
 export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
   const { slug } = await props.params;
-  const post = await getPost(slug);
+  const post = await getPostBySlug(slug);
   if (!post) notFound();
 
   return (

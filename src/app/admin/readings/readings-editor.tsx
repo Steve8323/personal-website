@@ -76,23 +76,31 @@ export default function ReadingsEditor({
 
     for (let i = 0; i < items.length; i++) {
       const r = items[i];
-      if (!r.title.trim() || !r.author.trim() || !r.note.trim()) {
+      const hasAny =
+        (r.title && r.title.trim()) ||
+        (r.author && r.author.trim()) ||
+        (r.note && r.note.trim()) ||
+        (r.link && r.link.trim());
+      if (!hasAny) {
         setStatus({
           kind: "error",
-          message: `Entry ${i + 1} is missing title, author, or note.`,
+          message: `Entry ${i + 1} is empty — fill in at least one field or delete it.`,
         });
         return;
       }
     }
 
+    const trim = (s: string | undefined) =>
+      s && s.trim().length > 0 ? s.trim() : undefined;
+
     const payload = {
       readings: items.map((r) => ({
         id: r.id,
-        title: r.title.trim(),
-        author: r.author.trim(),
-        link: r.link && r.link.trim().length > 0 ? r.link.trim() : undefined,
+        title: trim(r.title),
+        author: trim(r.author),
+        link: trim(r.link),
         category: r.category,
-        note: r.note.trim(),
+        note: trim(r.note),
       })),
     };
 
@@ -198,19 +206,24 @@ export default function ReadingsEditor({
                 </button>
               </div>
             </div>
+            <p className="mt-2 text-[11px] text-zinc-500">
+              All fields are optional. Fill in whatever fits — title and author
+              for a paper or book, just a link for a website, just a note for
+              a quote.
+            </p>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Field label="Title">
+              <Field label="Title (optional)">
                 <input
                   type="text"
-                  value={r.title}
+                  value={r.title ?? ""}
                   onChange={(e) => update(r.id, { title: e.target.value })}
                   className="w-full rounded-md border border-black/[.12] bg-transparent px-3 py-1.5 text-sm outline-none focus:border-foreground dark:border-white/[.18]"
                 />
               </Field>
-              <Field label="Author">
+              <Field label="Author (optional)">
                 <input
                   type="text"
-                  value={r.author}
+                  value={r.author ?? ""}
                   onChange={(e) => update(r.id, { author: e.target.value })}
                   className="w-full rounded-md border border-black/[.12] bg-transparent px-3 py-1.5 text-sm outline-none focus:border-foreground dark:border-white/[.18]"
                 />
@@ -241,9 +254,9 @@ export default function ReadingsEditor({
               </Field>
             </div>
             <div className="mt-3">
-              <Field label="Note">
+              <Field label="Note (optional)">
                 <textarea
-                  value={r.note}
+                  value={r.note ?? ""}
                   rows={3}
                   onChange={(e) => update(r.id, { note: e.target.value })}
                   className="w-full rounded-md border border-black/[.12] bg-transparent px-3 py-1.5 text-sm outline-none focus:border-foreground dark:border-white/[.18] resize-y"

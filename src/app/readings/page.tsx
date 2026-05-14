@@ -4,6 +4,7 @@ import {
   CATEGORY_ORDER,
   getReadings,
   groupByCategory,
+  type Reading,
 } from "@/lib/readings-store";
 
 export const metadata: Metadata = {
@@ -35,26 +36,7 @@ export default async function ReadingsPage() {
               <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
                 {items.map((r) => (
                   <li key={r.id} className="py-5">
-                    <h3 className="font-medium">
-                      {r.link ? (
-                        <a
-                          href={r.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline underline-offset-4"
-                        >
-                          {r.title}
-                        </a>
-                      ) : (
-                        r.title
-                      )}
-                    </h3>
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      {r.author}
-                    </p>
-                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                      {r.note}
-                    </p>
+                    <ReadingDetail r={r} />
                   </li>
                 ))}
               </ul>
@@ -63,5 +45,47 @@ export default async function ReadingsPage() {
         })}
       </div>
     </div>
+  );
+}
+
+function ReadingDetail({ r }: { r: Reading }) {
+  const head = r.title || r.author || r.note || r.link || "";
+  const headIsLink = !r.title && !r.author && !r.note && !!r.link;
+  const noteIsHead = !r.title && !r.author && !!r.note;
+  const showAuthor = !!r.author && !!r.title;
+  const showNote = !!r.note && !noteIsHead;
+
+  return (
+    <>
+      <h3 className="font-medium">
+        {r.link && !headIsLink ? (
+          <a
+            href={r.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline underline-offset-4"
+          >
+            {head}
+          </a>
+        ) : headIsLink ? (
+          <a
+            href={r.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-sm hover:underline underline-offset-4"
+          >
+            {r.link}
+          </a>
+        ) : (
+          head
+        )}
+      </h3>
+      {showAuthor && (
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{r.author}</p>
+      )}
+      {showNote && (
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{r.note}</p>
+      )}
+    </>
   );
 }

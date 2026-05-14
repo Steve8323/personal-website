@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllPosts } from "@/lib/posts";
+import { getPostSummaries } from "@/lib/posts-store";
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [posts, readings] = await Promise.all([
-    Promise.resolve(getAllPosts()),
+    getPostSummaries(),
     getReadings(),
   ]);
   const grouped = groupByCategory(readings);
@@ -42,7 +42,7 @@ export default async function Home() {
           </h2>
           <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
             {posts.map((post) => (
-              <li key={post.slug} className="py-5">
+              <li key={post.id} className="py-5">
                 <Link href={`/blog/${post.slug}`} className="group block">
                   <div className="flex items-baseline justify-between gap-4">
                     <h3 className="font-medium group-hover:underline underline-offset-4">
@@ -86,23 +86,30 @@ export default async function Home() {
                   {CATEGORY_LABELS[cat]}
                 </h3>
                 <ul className="mt-2 flex flex-col gap-1.5">
-                  {items.map((r) => (
-                    <li key={r.id} className="text-sm leading-6">
-                      {r.link ? (
-                        <a
-                          href={r.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-foreground hover:underline underline-offset-4"
-                        >
-                          {r.title}
-                        </a>
-                      ) : (
-                        <span className="text-foreground">{r.title}</span>
-                      )}
-                      <span className="text-zinc-500"> — {r.author}</span>
-                    </li>
-                  ))}
+                  {items.map((r) => {
+                    const head = r.title || r.author || r.note || r.link || "";
+                    const tail =
+                      r.title && r.author
+                        ? ` — ${r.author}`
+                        : "";
+                    return (
+                      <li key={r.id} className="text-sm leading-6">
+                        {r.link ? (
+                          <a
+                            href={r.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-foreground hover:underline underline-offset-4"
+                          >
+                            {head}
+                          </a>
+                        ) : (
+                          <span className="text-foreground">{head}</span>
+                        )}
+                        {tail && <span className="text-zinc-500">{tail}</span>}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             );
