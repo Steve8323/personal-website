@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_ORDER,
-  getReadings,
-  groupByCategory,
-  type Reading,
-} from "@/lib/readings-store";
+import { getState, groupReadings, type Reading } from "@/lib/readings-store";
 
 export const metadata: Metadata = {
   title: "Readings · Steve Hou",
@@ -14,8 +8,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ReadingsPage() {
-  const readings = await getReadings();
-  const grouped = groupByCategory(readings);
+  const state = await getState();
+  const groups = groupReadings(state);
 
   return (
     <div>
@@ -25,24 +19,23 @@ export default async function ReadingsPage() {
       </p>
 
       <div className="mt-12 flex flex-col gap-14">
-        {CATEGORY_ORDER.map((cat) => {
-          const items = grouped[cat];
-          if (items.length === 0) return null;
-          return (
-            <section key={cat}>
-              <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
-                {CATEGORY_LABELS[cat]}
-              </h2>
-              <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
-                {items.map((r) => (
-                  <li key={r.id} className="py-5">
-                    <ReadingDetail r={r} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })}
+        {groups.length === 0 && (
+          <p className="text-sm text-zinc-500">Nothing here yet.</p>
+        )}
+        {groups.map((g) => (
+          <section key={g.name}>
+            <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
+              {g.name}
+            </h2>
+            <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
+              {g.items.map((r) => (
+                <li key={r.id} className="py-5">
+                  <ReadingDetail r={r} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     </div>
   );

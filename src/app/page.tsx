@@ -1,20 +1,15 @@
 import Link from "next/link";
 import { getPostSummaries } from "@/lib/posts-store";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_ORDER,
-  getReadings,
-  groupByCategory,
-} from "@/lib/readings-store";
+import { getState, groupReadings } from "@/lib/readings-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [posts, readings] = await Promise.all([
+  const [posts, readingsState] = await Promise.all([
     getPostSummaries(),
-    getReadings(),
+    getState(),
   ]);
-  const grouped = groupByCategory(readings);
+  const groups = groupReadings(readingsState);
 
   return (
     <div className="flex flex-col gap-16">
@@ -77,43 +72,37 @@ export default async function Home() {
           </Link>
         </div>
         <div className="mt-6 flex flex-col gap-8">
-          {CATEGORY_ORDER.map((cat) => {
-            const items = grouped[cat];
-            if (items.length === 0) return null;
-            return (
-              <div key={cat}>
-                <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                  {CATEGORY_LABELS[cat]}
-                </h3>
-                <ul className="mt-2 flex flex-col gap-1.5">
-                  {items.map((r) => {
-                    const head = r.title || r.author || r.note || r.link || "";
-                    const tail =
-                      r.title && r.author
-                        ? ` — ${r.author}`
-                        : "";
-                    return (
-                      <li key={r.id} className="text-sm leading-6">
-                        {r.link ? (
-                          <a
-                            href={r.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground hover:underline underline-offset-4"
-                          >
-                            {head}
-                          </a>
-                        ) : (
-                          <span className="text-foreground">{head}</span>
-                        )}
-                        {tail && <span className="text-zinc-500">{tail}</span>}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
+          {groups.map((g) => (
+            <div key={g.name}>
+              <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                {g.name}
+              </h3>
+              <ul className="mt-2 flex flex-col gap-1.5">
+                {g.items.map((r) => {
+                  const head = r.title || r.author || r.note || r.link || "";
+                  const tail =
+                    r.title && r.author ? ` — ${r.author}` : "";
+                  return (
+                    <li key={r.id} className="text-sm leading-6">
+                      {r.link ? (
+                        <a
+                          href={r.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground hover:underline underline-offset-4"
+                        >
+                          {head}
+                        </a>
+                      ) : (
+                        <span className="text-foreground">{head}</span>
+                      )}
+                      {tail && <span className="text-zinc-500">{tail}</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
     </div>
