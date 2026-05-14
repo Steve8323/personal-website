@@ -24,7 +24,12 @@ export default function AdminLunchesClient({ groups }: { groups: Group[] }) {
   const [picking, setPicking] = useState<string | null>(null);
 
   async function pick(id: string, email: string) {
-    if (!confirm(`Pick ${email}? They'll get a confirmation email and others for this day will be declined.`)) {
+    if (
+      !confirm(
+        `Pick ${email}? Others for this day will be marked declined. ` +
+          `No email is auto-sent — message them yourself.`,
+      )
+    ) {
       return;
     }
     setPicking(id);
@@ -34,19 +39,11 @@ export default function AdminLunchesClient({ groups }: { groups: Group[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         alert(typeof data.error === "string" ? data.error : "Couldn't pick.");
         setPicking(null);
         return;
-      }
-      if (typeof data.emailWarning === "string" && data.emailWarning) {
-        alert(
-          `Picked ${email}, but the confirmation email didn't send:\n\n` +
-            `${data.emailWarning}\n\n` +
-            `(Resend's sandbox sender only delivers to contact.levu@proton.me. ` +
-            `Verify a domain in Resend and set LUNCH_FROM_EMAIL to send to anyone.)`,
-        );
       }
       router.refresh();
     } catch {
