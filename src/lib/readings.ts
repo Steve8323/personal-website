@@ -33,8 +33,8 @@ export const readings: Reading[] = [
 
 export const CATEGORY_LABELS: Record<ReadingCategory, string> = {
   life: "Life",
-  work: "Work",
   ai: "Artificial Intelligence",
+  work: "My Love",
 };
 
-export const CATEGORY_ORDER: ReadingCategory[] = ["life", "work", "ai"];
+export const CATEGORY_ORDER: ReadingCategory[] = ["life", "ai", "work"];
