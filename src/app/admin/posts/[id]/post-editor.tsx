@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Initial = {
@@ -31,6 +31,36 @@ export default function PostEditor({
   const [excerpt, setExcerpt] = useState(initial.excerpt);
   const [content, setContent] = useState(initial.content);
   const [status, setStatus] = useState<SaveStatus>({ kind: "idle" });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertAtCursor(before: string, selectionDefault: string, after: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = content.slice(start, end) || selectionDefault;
+    const next = content.slice(0, start) + before + selected + after + content.slice(end);
+    setContent(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const cursorStart = start + before.length;
+      const cursorEnd = cursorStart + selected.length;
+      el.setSelectionRange(cursorStart, cursorEnd);
+    });
+  }
+
+  function onInsertLink() {
+    const url = window.prompt("Link URL", "https://");
+    if (!url) return;
+    insertAtCursor("[", "link text", `](${url})`);
+  }
+
+  function onInsertImage() {
+    const url = window.prompt("Image URL");
+    if (!url) return;
+    const alt = window.prompt("Alt text (optional)", "") || "";
+    insertAtCursor("![", alt, `](${url})`);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -104,14 +134,36 @@ export default function PostEditor({
         </Field>
       </div>
 
-      <Field label="Content (Markdown)">
-        <textarea
-          required
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={24}
-          className="w-full rounded-md border border-black/[.12] bg-transparent px-3 py-2 font-mono text-sm leading-6 outline-none focus:border-foreground dark:border-white/[.18] resize-y"
-        />
+      <Field label="Content (Markdown — single Enter = line break)">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onInsertLink}
+              className="rounded-md border border-black/[.12] px-2.5 py-1 text-xs hover:border-foreground dark:border-white/[.18]"
+            >
+              Insert link
+            </button>
+            <button
+              type="button"
+              onClick={onInsertImage}
+              className="rounded-md border border-black/[.12] px-2.5 py-1 text-xs hover:border-foreground dark:border-white/[.18]"
+            >
+              Insert image
+            </button>
+            <span className="text-xs text-zinc-500">
+              Or paste Markdown directly: <code>[text](url)</code>, <code>![alt](url)</code>
+            </span>
+          </div>
+          <textarea
+            ref={textareaRef}
+            required
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={24}
+            className="w-full rounded-md border border-black/[.12] bg-transparent px-3 py-2 font-mono text-sm leading-6 outline-none focus:border-foreground dark:border-white/[.18] resize-y"
+          />
+        </div>
       </Field>
 
       <div className="flex items-center gap-4">

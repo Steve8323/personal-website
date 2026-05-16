@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
+import breaks from "remark-breaks";
 import { format, parseISO } from "date-fns";
 import { Redis } from "@upstash/redis";
 
@@ -98,7 +99,7 @@ export async function getPostBySlug(
   const posts = await getAllPosts();
   const post = posts.find((p) => p.slug === slug);
   if (!post) return null;
-  const processed = await remark().use(html).process(post.content);
+  const processed = await remark().use(breaks).use(html).process(post.content);
   return {
     ...post,
     contentHtml: processed.toString(),
