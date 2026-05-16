@@ -85,6 +85,10 @@ export default function PostEditor({
     insertAtCursor("![", alt, `](${url})`);
   }
 
+  function onInsertNote() {
+    insertAtCursor("^[", "note text", "]");
+  }
+
   function onInsertQuote() {
     const el = textareaRef.current;
     if (!el) return;
@@ -332,6 +336,13 @@ export default function PostEditor({
               className="rounded-md border border-black/[.12] px-2.5 py-1 text-xs hover:border-foreground dark:border-white/[.18]"
             >
               Quote
+            </button>
+            <button
+              type="button"
+              onClick={onInsertNote}
+              className="rounded-md border border-black/[.12] px-2.5 py-1 text-xs hover:border-foreground dark:border-white/[.18]"
+            >
+              Side note
             </button>
             {upload.kind === "uploading" && (
               <span className="text-xs text-zinc-500">Uploading image…</span>

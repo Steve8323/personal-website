@@ -99,12 +99,49 @@ export async function getPostBySlug(
   const posts = await getAllPosts();
   const post = posts.find((p) => p.slug === slug);
   if (!post) return null;
-  const processed = await remark().use(breaks).use(html).process(post.content);
   return {
     ...post,
-    contentHtml: processed.toString(),
+    contentHtml: await renderPostHtml(post.content),
     dateLabel: safeFormatDate(post.date),
   };
+}
+
+async function renderMarkdown(md: string): Promise<string> {
+  const file = await remark()
+    .use(breaks)
+    .use(html, { sanitize: false })
+    .process(md);
+  return file.toString();
+}
+
+async function renderInlineMarkdown(md: string): Promise<string> {
+  const out = await renderMarkdown(md);
+  return out.trim().replace(/^<p>/, "").replace(/<\/p>\s*$/, "");
+}
+
+async function renderPostHtml(source: string): Promise<string> {
+  const bodies: string[] = [];
+  const placeholdered = source.replace(
+    /\^\[((?:[^[\]]|\[[^\]]*\])+)\]/g,
+    (_, body: string) => {
+      bodies.push(body);
+      return `xSIDENOTEx${bodies.length}xEND`;
+    },
+  );
+
+  let main = await renderMarkdown(placeholdered);
+
+  for (let i = 0; i < bodies.length; i++) {
+    const n = i + 1;
+    const bodyHtml = await renderInlineMarkdown(bodies[i]);
+    const inject =
+      `<sup class="sn-ref"><a id="sn-ref-${n}" href="#sn-${n}">${n}</a></sup>` +
+      `<span class="sidenote" id="sn-${n}">` +
+      `<sup class="sn-num">${n}</sup>${bodyHtml}` +
+      `</span>`;
+    main = main.replace(`xSIDENOTEx${n}xEND`, inject);
+  }
+  return main;
 }
 
 export async function getPostById(

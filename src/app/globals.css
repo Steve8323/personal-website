@@ -105,3 +105,59 @@ body {
   border-radius: 0.5rem;
   margin: 1.25rem 0;
 }
+
+.prose-content .sn-ref {
+  font-size: 0.7em;
+  line-height: 0;
+  margin-left: 1px;
+}
+.prose-content .sn-ref a {
+  text-decoration: none;
+  color: rgb(120, 53, 15);
+}
+@media (prefers-color-scheme: dark) {
+  .prose-content .sn-ref a {
+    color: rgb(252, 211, 77);
+  }
+}
+
+.prose-content .sidenote {
+  display: block;
+  font-size: 0.85em;
+  line-height: 1.55;
+  color: rgb(82, 82, 91);
+  margin: 0.5rem 0 1rem 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(0, 0, 0, 0.1);
+}
+.prose-content .sidenote .sn-num {
+  font-size: 0.85em;
+  margin-right: 0.35em;
+  color: rgb(120, 53, 15);
+}
+.prose-content .sidenote p {
+  margin: 0;
+  display: inline;
+}
+@media (prefers-color-scheme: dark) {
+  .prose-content .sidenote {
+    color: rgb(161, 161, 170);
+    border-left-color: rgba(255, 255, 255, 0.15);
+  }
+  .prose-content .sidenote .sn-num {
+    color: rgb(252, 211, 77);
+  }
+}
+
+@media (min-width: 1180px) {
+  .prose-content .sidenote {
+    float: right;
+    clear: right;
+    width: 12rem;
+    margin: 0 -13rem 1rem 0;
+    padding-left: 0;
+    border-left: none;
+    font-size: 0.78em;
+    line-height: 1.55;
+  }
+}
