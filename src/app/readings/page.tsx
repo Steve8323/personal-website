@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { getState, groupReadings, type Reading } from "@/lib/readings-store";
+import {
+  getState,
+  groupReadings,
+  personalReadings,
+  type Reading,
+} from "@/lib/readings-store";
 
 export const metadata: Metadata = {
   title: "Readings · Steve Hou",
@@ -10,6 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function ReadingsPage() {
   const state = await getState();
   const groups = groupReadings(state);
+  const personal = personalReadings(state);
 
   return (
     <div>
@@ -19,7 +25,7 @@ export default async function ReadingsPage() {
       </p>
 
       <div className="mt-12 flex flex-col gap-14">
-        {groups.length === 0 && (
+        {groups.length === 0 && personal.length === 0 && (
           <p className="text-sm text-zinc-500">Nothing here yet.</p>
         )}
         {groups.map((g) => (
@@ -36,6 +42,17 @@ export default async function ReadingsPage() {
             </ul>
           </section>
         ))}
+        {personal.length > 0 && (
+          <section>
+            <ul className="divide-y divide-black/[.06] dark:divide-white/[.08]">
+              {personal.map((r) => (
+                <li key={r.id} className="py-5">
+                  <ReadingDetail r={r} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

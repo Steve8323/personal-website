@@ -147,6 +147,7 @@ export default function ReadingsEditor({
       map.set(normKey(name), { name, items: [] });
     }
     for (const r of items) {
+      if (r.personal) continue;
       const cat = (r.category || "").trim();
       const key = normKey(cat) || "__uncategorized__";
       if (!map.has(key)) {
@@ -163,6 +164,11 @@ export default function ReadingsEditor({
     for (const [, b] of map) ordered.push(b);
     return ordered;
   }, [categoryOrder, items]);
+
+  const personalPreview = useMemo(
+    () => items.filter((r) => r.personal === true),
+    [items],
+  );
 
   // --- Save ---
 
@@ -196,6 +202,7 @@ export default function ReadingsEditor({
         link: trim(r.link),
         category: (r.category || "").trim(),
         note: trim(r.note),
+        personal: r.personal === true ? true : undefined,
       })),
       categoryOrder,
     };
@@ -361,7 +368,19 @@ export default function ReadingsEditor({
                   #{i + 1}
                   {r._ui?.isNew ? " · new" : ""}
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs text-zinc-500 select-none">
+                    <input
+                      type="checkbox"
+                      checked={r.personal === true}
+                      onChange={(e) =>
+                        update(r.id, {
+                          personal: e.target.checked ? true : undefined,
+                        })
+                      }
+                    />
+                    Personal
+                  </label>
                   <button
                     type="button"
                     onClick={() => move(r.id, -1)}
@@ -474,6 +493,20 @@ export default function ReadingsEditor({
                 </ul>
               </div>
             ),
+          )}
+          {personalPreview.length > 0 && (
+            <div className="rounded-md bg-black/[.02] p-3 dark:bg-white/[.03]">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                Personal
+              </h3>
+              <ul className="mt-1 text-sm">
+                {personalPreview.map((r) => (
+                  <li key={r.id} className="text-zinc-600 dark:text-zinc-400">
+                    {r.title || r.author || r.note || r.link || "(empty)"}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </section>

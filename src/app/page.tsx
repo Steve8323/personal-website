@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPostSummaries } from "@/lib/posts-store";
-import { getState, groupReadings } from "@/lib/readings-store";
+import { getState, groupReadings, personalReadings } from "@/lib/readings-store";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +10,7 @@ export default async function Home() {
     getState(),
   ]);
   const groups = groupReadings(readingsState);
+  const personal = personalReadings(readingsState);
 
   return (
     <div className="flex flex-col gap-16">
@@ -78,33 +79,53 @@ export default async function Home() {
                 {g.name}
               </h3>
               <ul className="mt-2 flex flex-col gap-1.5">
-                {g.items.map((r) => {
-                  const head = r.title || r.author || r.note || r.link || "";
-                  const tail =
-                    r.title && r.author ? ` — ${r.author}` : "";
-                  return (
-                    <li key={r.id} className="text-sm leading-6">
-                      {r.link ? (
-                        <a
-                          href={r.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-foreground hover:underline underline-offset-4"
-                        >
-                          {head}
-                        </a>
-                      ) : (
-                        <span className="text-foreground">{head}</span>
-                      )}
-                      {tail && <span className="text-zinc-500">{tail}</span>}
-                    </li>
-                  );
-                })}
+                {g.items.map((r) => (
+                  <ReadingLine key={r.id} r={r} />
+                ))}
               </ul>
             </div>
           ))}
+          {personal.length > 0 && (
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {personal.map((r) => (
+                <ReadingLine key={r.id} r={r} />
+              ))}
+            </ul>
+          )}
         </div>
       </section>
     </div>
+  );
+}
+
+function ReadingLine({
+  r,
+}: {
+  r: {
+    id: string;
+    title?: string;
+    author?: string;
+    link?: string;
+    note?: string;
+  };
+}) {
+  const head = r.title || r.author || r.note || r.link || "";
+  const tail = r.title && r.author ? ` — ${r.author}` : "";
+  return (
+    <li className="text-sm leading-6">
+      {r.link ? (
+        <a
+          href={r.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground hover:underline underline-offset-4"
+        >
+          {head}
+        </a>
+      ) : (
+        <span className="text-foreground">{head}</span>
+      )}
+      {tail && <span className="text-zinc-500">{tail}</span>}
+    </li>
   );
 }

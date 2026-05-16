@@ -11,6 +11,7 @@ export type Reading = {
   link?: string;
   category: string;
   note?: string;
+  personal?: boolean;
 };
 
 export type ReadingsState = {
@@ -135,8 +136,9 @@ export function sanitizeReading(input: unknown): Reading | null {
   const link = optionalString(obj.link, 500);
   const category =
     typeof obj.category === "string" ? obj.category.trim().slice(0, 100) : "";
+  const personal = obj.personal === true ? true : undefined;
   if (!title && !author && !note && !link) return null;
-  return { id, title, author, link, category, note };
+  return { id, title, author, link, category, note, personal };
 }
 
 export function sanitizeCategoryOrder(input: unknown): string[] | null {
@@ -161,6 +163,7 @@ export function groupReadings(state: ReadingsState): ReadingGroup[] {
     buckets.set(normalizeKey(name), { name, items: [] });
   }
   for (const r of state.readings) {
+    if (r.personal) continue;
     const raw = r.category?.trim() || "";
     if (!raw) {
       const key = "";
@@ -188,4 +191,8 @@ export function groupReadings(state: ReadingsState): ReadingGroup[] {
     result.push(b);
   }
   return result.filter((g) => g.items.length > 0);
+}
+
+export function personalReadings(state: ReadingsState): Reading[] {
+  return state.readings.filter((r) => r.personal === true);
 }
