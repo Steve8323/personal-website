@@ -44,7 +44,10 @@ export default async function ReadingsPage() {
         ))}
         {personal.length > 0 && (
           <section>
-            <ul className="divide-y divide-black/[.06] dark:divide-white/[.08]">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
+              Personal list
+            </h2>
+            <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
               {personal.map((r) => (
                 <li key={r.id} className="py-5">
                   <ReadingDetail r={r} />

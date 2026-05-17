@@ -85,15 +85,21 @@ export default async function Home() {
               </ul>
             </div>
           ))}
-          {personal.length > 0 && (
-            <ul className="mt-2 flex flex-col gap-1.5">
-              {personal.map((r) => (
-                <ReadingLine key={r.id} r={r} />
-              ))}
-            </ul>
-          )}
         </div>
       </section>
+
+      {personal.length > 0 && (
+        <section>
+          <h2 className="text-sm font-mono uppercase tracking-widest text-zinc-500">
+            Personal list
+          </h2>
+          <ul className="mt-6 flex flex-col gap-1.5">
+            {personal.map((r) => (
+              <ReadingLine key={r.id} r={r} />
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
