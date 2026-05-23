@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Reading } from "@/lib/readings-store";
+import Link from "next/link";
+import {
+  computeScores,
+  TIER_LABELS,
+  type Reading,
+} from "@/lib/readings-store";
 
 type Draft = Reading & { _ui?: { isNew?: boolean } };
 
@@ -170,6 +175,8 @@ export default function ReadingsEditor({
     [items],
   );
 
+  const scores = useMemo(() => computeScores(items), [items]);
+
   // --- Save ---
 
   async function save() {
@@ -203,6 +210,8 @@ export default function ReadingsEditor({
         category: (r.category || "").trim(),
         note: trim(r.note),
         personal: r.personal === true ? true : undefined,
+        tier: r.tier,
+        tierRank: r.tierRank,
       })),
       categoryOrder,
     };
@@ -369,6 +378,29 @@ export default function ReadingsEditor({
                   {r._ui?.isNew ? " · new" : ""}
                 </span>
                 <div className="flex items-center gap-3">
+                  {typeof scores.get(r.id) === "number" && r.tier && (
+                    <span
+                      className="font-mono text-xs text-zinc-700 dark:text-zinc-300"
+                      title={TIER_LABELS[r.tier]}
+                    >
+                      {scores.get(r.id)!.toFixed(1)}
+                    </span>
+                  )}
+                  {r._ui?.isNew ? (
+                    <span
+                      className="text-xs text-zinc-400"
+                      title="Save first to enable rating"
+                    >
+                      Rate
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/admin/readings/rate/${r.id}`}
+                      className="text-xs text-zinc-600 underline underline-offset-4 hover:text-foreground dark:text-zinc-400"
+                    >
+                      {r.tier ? "Re-rank" : "Rate"}
+                    </Link>
+                  )}
                   <label className="flex items-center gap-1.5 text-xs text-zinc-500 select-none">
                     <input
                       type="checkbox"

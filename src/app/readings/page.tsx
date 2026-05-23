@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  computeScores,
   getState,
   groupReadings,
   personalReadings,
@@ -16,6 +17,7 @@ export default async function ReadingsPage() {
   const state = await getState();
   const groups = groupReadings(state);
   const personal = personalReadings(state);
+  const scores = computeScores(state.readings);
 
   return (
     <div>
@@ -36,7 +38,7 @@ export default async function ReadingsPage() {
             <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
               {g.items.map((r) => (
                 <li key={r.id} className="py-5">
-                  <ReadingDetail r={r} />
+                  <ReadingDetail r={r} score={scores.get(r.id)} />
                 </li>
               ))}
             </ul>
@@ -50,7 +52,7 @@ export default async function ReadingsPage() {
             <ul className="mt-4 divide-y divide-black/[.06] dark:divide-white/[.08]">
               {personal.map((r) => (
                 <li key={r.id} className="py-5">
-                  <ReadingDetail r={r} />
+                  <ReadingDetail r={r} score={scores.get(r.id)} />
                 </li>
               ))}
             </ul>
@@ -61,7 +63,7 @@ export default async function ReadingsPage() {
   );
 }
 
-function ReadingDetail({ r }: { r: Reading }) {
+function ReadingDetail({ r, score }: { r: Reading; score?: number }) {
   const head = r.title || r.author || r.note || r.link || "";
   const headIsLink = !r.title && !r.author && !r.note && !!r.link;
   const noteIsHead = !r.title && !r.author && !!r.note;
@@ -71,6 +73,11 @@ function ReadingDetail({ r }: { r: Reading }) {
   return (
     <>
       <h3 className="font-medium">
+        {typeof score === "number" && (
+          <span className="mr-2 inline-block min-w-[2.5rem] rounded bg-black/[.06] px-2 py-0.5 text-center font-mono text-xs align-middle text-zinc-700 dark:bg-white/[.08] dark:text-zinc-300">
+            {score.toFixed(1)}
+          </span>
+        )}
         {r.link && !headIsLink ? (
           <a
             href={r.link}

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getPostSummaries } from "@/lib/posts-store";
-import { getState, groupReadings, personalReadings } from "@/lib/readings-store";
+import {
+  computeScores,
+  getState,
+  groupReadings,
+  personalReadings,
+} from "@/lib/readings-store";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +16,7 @@ export default async function Home() {
   ]);
   const groups = groupReadings(readingsState);
   const personal = personalReadings(readingsState);
+  const scores = computeScores(readingsState.readings);
 
   return (
     <div className="flex flex-col gap-16">
@@ -80,7 +86,7 @@ export default async function Home() {
               </h3>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {g.items.map((r) => (
-                  <ReadingLine key={r.id} r={r} />
+                  <ReadingLine key={r.id} r={r} score={scores.get(r.id)} />
                 ))}
               </ul>
             </div>
@@ -95,7 +101,7 @@ export default async function Home() {
           </h2>
           <ul className="mt-6 flex flex-col gap-1.5">
             {personal.map((r) => (
-              <ReadingLine key={r.id} r={r} />
+              <ReadingLine key={r.id} r={r} score={scores.get(r.id)} />
             ))}
           </ul>
         </section>
@@ -106,6 +112,7 @@ export default async function Home() {
 
 function ReadingLine({
   r,
+  score,
 }: {
   r: {
     id: string;
@@ -114,11 +121,17 @@ function ReadingLine({
     link?: string;
     note?: string;
   };
+  score?: number;
 }) {
   const head = r.title || r.author || r.note || r.link || "";
   const tail = r.title && r.author ? ` — ${r.author}` : "";
   return (
     <li className="text-sm leading-6">
+      {typeof score === "number" && (
+        <span className="mr-2 inline-block min-w-[2.25rem] rounded bg-black/[.06] px-1.5 py-0.5 text-center font-mono text-[11px] text-zinc-700 dark:bg-white/[.08] dark:text-zinc-300">
+          {score.toFixed(1)}
+        </span>
+      )}
       {r.link ? (
         <a
           href={r.link}

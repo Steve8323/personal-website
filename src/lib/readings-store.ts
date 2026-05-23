@@ -4,6 +4,21 @@ import {
   DEFAULT_CATEGORY_ORDER,
 } from "./readings";
 
+export const TIERS = ["loved", "fine", "disliked"] as const;
+export type Tier = (typeof TIERS)[number];
+
+export const TIER_RANGES: Record<Tier, [number, number]> = {
+  disliked: [0.0, 3.9],
+  fine: [4.0, 6.9],
+  loved: [7.0, 10.0],
+};
+
+export const TIER_LABELS: Record<Tier, string> = {
+  loved: "Loved it",
+  fine: "It was fine",
+  disliked: "Didn't like it",
+};
+
 export type Reading = {
   id: string;
   title?: string;
@@ -12,6 +27,8 @@ export type Reading = {
   category: string;
   note?: string;
   personal?: boolean;
+  tier?: Tier;
+  tierRank?: number;
 };
 
 export type ReadingsState = {
@@ -137,8 +154,16 @@ export function sanitizeReading(input: unknown): Reading | null {
   const category =
     typeof obj.category === "string" ? obj.category.trim().slice(0, 100) : "";
   const personal = obj.personal === true ? true : undefined;
+  const tier =
+    typeof obj.tier === "string" && (TIERS as readonly string[]).includes(obj.tier)
+      ? (obj.tier as Tier)
+      : undefined;
+  const tierRank =
+    typeof obj.tierRank === "number" && Number.isFinite(obj.tierRank)
+      ? obj.tierRank
+      : undefined;
   if (!title && !author && !note && !link) return null;
-  return { id, title, author, link, category, note, personal };
+  return { id, title, author, link, category, note, personal, tier, tierRank };
 }
 
 export function sanitizeCategoryOrder(input: unknown): string[] | null {
@@ -195,4 +220,47 @@ export function groupReadings(state: ReadingsState): ReadingGroup[] {
 
 export function personalReadings(state: ReadingsState): Reading[] {
   return state.readings.filter((r) => r.personal === true);
+}
+
+export function tierItemsSorted(readings: Reading[], tier: Tier): Reading[] {
+  return readings
+    .filter((r) => r.tier === tier && typeof r.tierRank === "number")
+    .sort((a, b) => (a.tierRank ?? 0) - (b.tierRank ?? 0));
+}
+
+export function computeScores(readings: Reading[]): Map<string, number> {
+  const scores = new Map<string, number>();
+  for (const tier of TIERS) {
+    const items = tierItemsSorted(readings, tier);
+    const n = items.length;
+    if (n === 0) continue;
+    const [lo, hi] = TIER_RANGES[tier];
+    if (n === 1) {
+      scores.set(items[0].id, round1((lo + hi) / 2));
+      continue;
+    }
+    for (let i = 0; i < n; i++) {
+      const raw = hi - (i / (n - 1)) * (hi - lo);
+      scores.set(items[i].id, round1(raw));
+    }
+  }
+  return scores;
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+/**
+ * Pick a fractional tierRank that lands `target` at 0-indexed `slot`
+ * within the tier (slot 0 = best). `pool` is the items already in that
+ * tier, sorted best→worst, excluding `target`.
+ */
+export function rankForSlot(pool: Reading[], slot: number): number {
+  if (pool.length === 0) return 1;
+  if (slot <= 0) return (pool[0].tierRank ?? 1) - 1;
+  if (slot >= pool.length) return (pool[pool.length - 1].tierRank ?? pool.length) + 1;
+  const before = pool[slot - 1].tierRank ?? slot;
+  const after = pool[slot].tierRank ?? slot + 1;
+  return (before + after) / 2;
 }
